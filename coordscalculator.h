@@ -1,23 +1,25 @@
 #ifndef COORDSCALCULATOR_H
 #define COORDSCALCULATOR_H
 
-#include "container/threadsafeset.h"
+#include "container/threadsafevector.h"
 
 /** Класс для расчета координат шариков */
 
-#define DELAY 10
+#define DELAY 50
+#define WEIGHT 1
+#define PX2LENGHT 100
 
 class CoordsCalculator
 {
 
 private:
-    ThreadSafeSet *points_;
+    ThreadSafeVector<Bubble> *points_;
     bool started_;
 
-    void _calulateCoords();
+    void _calculateCoords();
 
 public:
-    explicit CoordsCalculator(ThreadSafeSet *points);
+    explicit CoordsCalculator(ThreadSafeVector<Bubble> *points);
     virtual ~CoordsCalculator();
 
     void start();

@@ -40,3 +40,21 @@ std::unordered_set<Point,pair_hash> ThreadSafeSet::getElements() const
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     return set_;
 }
+
+std::unordered_set<Point,pair_hash>::size_type ThreadSafeSet::getElementsCount() const
+{
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    return set_.size();
+}
+
+std::vector<Point> ThreadSafeSet::getNeighbours(const Point &point) const
+{
+    std::vector<Point> result;
+    for(auto it=set_.begin(); it != set_.end(); ++it)
+        if(*it != point)
+            result.push_back(*it);
+
+    return result;
+}
+
+

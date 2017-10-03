@@ -2,19 +2,37 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "container/threadsafeset.h"
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include "container/threadsafevector.h"
+#include "coordscalculator.h"
+#include <thread>
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 private:
+    ThreadSafeVector<Bubble> *points_;
+    QGraphicsScene *graphicsScene_;
+    QGraphicsView *graphicsView_;
+    QVBoxLayout *layout;
+    QWidget *mainWidget;
+    CoordsCalculator *calculator_;
 
-    ThreadSafeSet *points_;
+    QPushButton *btn;
+    std::thread *thread_;
 
 public:
-    MainWindow(ThreadSafeSet *points, QWidget *parent = 0);
+    MainWindow(ThreadSafeVector<Bubble> *points, QWidget *parent = 0);
     ~MainWindow();
+
+private slots:
+    void start();
+    void _redraw();
+
 };
 
 #endif // MAINWINDOW_H

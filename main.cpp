@@ -1,25 +1,20 @@
 #include "mainwindow.h"
 #include <QApplication>
-#include "coordscalculator.h"
-#include <thread>
 
 
-ThreadSafeSet points;
-CoordsCalculator calculator(&points);
+ThreadSafeVector<Bubble> points;
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+    for(auto i=0; i<2; ++i) {
+        points.addElement(Bubble(i*100,i*100));
+    }
 
     MainWindow w(&points);
-
-    std::thread thread([]{
-        calculator.start();
-    });
-
-    thread.join();
     w.show();
+
 
     return a.exec();
 }

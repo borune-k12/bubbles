@@ -2,6 +2,7 @@
 #define THREADSAFESET_H
 
 #include <unordered_set>
+#include <vector>
 #include <mutex>
 
 #define MAX_X 1920;
@@ -27,6 +28,8 @@ public:
     bool removeElement(const Point& obj);
     void updateElement(const Point& oldValue, const Point& newValue);
     std::unordered_set<Point, pair_hash> getElements() const;
+    std::unordered_set<Point, pair_hash>::size_type getElementsCount() const;
+    std::vector<Point> getNeighbours(const Point& point) const;
 };
 
 
