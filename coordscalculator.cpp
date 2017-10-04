@@ -63,7 +63,11 @@ void CoordsCalculator::_calculateCoords()
 
                // qDebug() << "dx = " << std::get<0>(matrix[column][row]);
                 //qDebug() << "dy = " << std::get<1>(matrix[column][row]);
-                qDebug() << "r = " << std::get<2>(matrix[row][column]);
+                /*static float max_r = std::get<2>(matrix[row][column]);
+                if(max_r < std::get<2>(matrix[row][column])) {
+                    qDebug() << "r = " << std::get<2>(matrix[row][column]);
+                    max_r = std::get<2>(matrix[row][column]);
+                }*/
                 //qDebug() << "f = " << std::get<3>(matrix[row][column]);
             }
 
@@ -85,8 +89,8 @@ void CoordsCalculator::_calculateCoords()
                     fy += std::get<3>(matrix[iter][oter])*std::get<1>(matrix[iter][oter])/std::get<2>(matrix[iter][oter]);
                 }
 
-            qDebug() << iter << ": fx = " << fx;
-            qDebug() << iter << ": fy = " << fy;
+            //qDebug() << iter << ": fx = " << fx;
+            //qDebug() << iter << ": fy = " << fy;
             forces.push_back(std::make_pair(fx,fy));
         }
 
@@ -103,8 +107,8 @@ void CoordsCalculator::_calculateCoords()
             current.vy += forces[iter].second*t;
 
 
-            qDebug() << iter << ": vx = " << current.vx;
-            qDebug() << iter << ": vy = " << current.vy;
+            //qDebug() << iter << ": vx = " << current.vx;
+            //qDebug() << iter << ": vy = " << current.vy;
 
             points_->setElement(iter,current);
         }

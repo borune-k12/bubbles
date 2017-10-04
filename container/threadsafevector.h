@@ -25,10 +25,12 @@ public:
     ThreadSafeVector();
     ~ThreadSafeVector();
     void addElement(const T& obj);
-    void removeElement(const T& obj);
+    void addElementToPosition(size_t position, const T& obj);
+    void removeElement(const size_t index);
     void setElement(const size_t index, const T& newValue);
     std::vector<T> getElements() const;
     size_t getElementsCount() const;
+    void clear();
 };
 
 template <class T> ThreadSafeVector<T>::ThreadSafeVector()
@@ -48,16 +50,22 @@ template <class T> void ThreadSafeVector<T>::addElement(const T& obj)
     vector_.push_back(obj);
 }
 
+// добавить элемент на заданную позицию
+template <class T> void ThreadSafeVector<T>::addElementToPosition(size_t position, const T& obj)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    vector_.insert(vector_.begin()+position,obj);
+}
+
 // удалить элемент из контейнера
-template <typename T> void ThreadSafeVector<T>::removeElement(const T& obj)
+template <typename T> void ThreadSafeVector<T>::removeElement(const size_t index)
 {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    auto element = std::find(vector_.begin(),vector_.end(),obj);
-    vector_.erase(element);
+    vector_.erase(vector_.begin()+index);
 }
 
-// изменить элемент
+// изменить элемент по индексу
 template <class T> void ThreadSafeVector<T>::setElement(const size_t index, const T& newValue)
 {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -72,10 +80,18 @@ template <class T> std::vector<T> ThreadSafeVector<T>::getElements() const
     return vector_;
 }
 
+// получить количество элементов в контейнере
 template <class T> size_t ThreadSafeVector<T>::getElementsCount() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
     return vector_.size();
+}
+
+// очистить контейнер
+template <class T> void ThreadSafeVector<T>::clear()
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    vector_.clear();
 }
 
 #endif // THREADSAFECONTAINER_H

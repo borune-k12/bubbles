@@ -5,7 +5,7 @@
 
 /** Класс для расчета координат шариков */
 
-#define DELAY 50
+#define DELAY 1
 #define WEIGHT 1
 #define PX2LENGHT 100
 
@@ -25,7 +25,7 @@ public:
     void start();
     void stop();
 
-    inline bool isStarted() const;
+    bool isStarted() const;
 };
 
 #endif // COORDSCALCULATOR_H

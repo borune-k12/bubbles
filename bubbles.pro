@@ -27,12 +27,15 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     container/threadsafeset.cpp \
-    coordscalculator.cpp
+    coordscalculator.cpp \
+    graphics/bubblegraphicsitem.cpp \
+    graphics/bubblescene.cpp
 
 HEADERS += \
         mainwindow.h \
      container/threadsafevector.h \
      container/threadsafeset.h \
     coordscalculator.h \
-    locker.h
+    graphics/bubblegraphicsitem.h \
+    graphics/bubblescene.h
 
