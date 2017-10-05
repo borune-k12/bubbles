@@ -2,15 +2,16 @@
 #define BUUBLESCENE_H
 
 #include <QGraphicsScene>
-#include <QGraphicsSceneMouseEvent>
 
+class QGraphicsSceneMouseEvent;
+
+/** класс сцены */
 class BubbleScene : public QGraphicsScene
 {
-
     Q_OBJECT
 
 public:
-    BubbleScene();
+    explicit BubbleScene(QObject *parent = 0);
 
 protected:
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);

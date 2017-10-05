@@ -2,18 +2,21 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QGraphicsScene>
-#include <QGraphicsView>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include "container/threadsafevector.h"
 #include "coordscalculator.h"
 #include <thread>
-#include <QMenu>
+#include <memory>
 
+
+#include "locker.h"
+
+class QGraphicsScene;
+class QGraphicsView;
+class QVBoxLayout;
+class QPushButton;
+class QMenu;
 class BubbleScene;
+class BubbleGraphicsItem;
 
-#define BUBBLE_RADIUS 15
 #define DEFAULT_BUBBLES_COUNT 5
 
 class MainWindow : public QMainWindow
@@ -21,35 +24,39 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 private:
-    ThreadSafeVector<Bubble> *bubbles_;
     BubbleScene *graphicsScene_;
     QGraphicsView *graphicsView_;
     QVBoxLayout *layout_;
     QWidget *mainWidget_;
-    CoordsCalculator *calculator_;
+    std::unique_ptr<CoordsCalculator> calculator_;
     QToolBar *toolBar_;
     QPushButton *btn_;
 
     QMenu *mainMenu_;
-    std::thread *thread_;
+    std::unique_ptr<std::thread> thread_;
 
     int bubblesCount_;
+    unsigned int clickedIndex_;
+
+    std::shared_ptr<Locker> locker_;
 
 public:
-    MainWindow( QWidget *parent = 0);
+    explicit MainWindow( QWidget *parent = 0);
     ~MainWindow();
 
 private slots:
-    void start();
-    void redraw();
+    void sltStartStop();
+    void sltReDraw();
 
-    void bubbleMoved(size_t index);
-    void bubbleDeleted(size_t index);
-    void addBubble(const QPointF& dst);
+    void sltBubbleMoved();
+    void sltDeleteBubble();
+    void sltBubbleClicked();
 
-    void showSettings();
+    void sltAddBubble(const QPointF& dst);
 
-    void _createBubbles();
+    void sltShowSettings();
+
+    void sltCreateBubbles();
 
 };
 

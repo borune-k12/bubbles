@@ -1,21 +1,24 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2017-10-02T12:43:39
+# Project created by QtCreator 2017-10-05T16:39:46
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += testlib
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-CONFIG += c++11
-TARGET = bubbles
+QT       -= gui
+
+TARGET = tst_bubblestesttest
+CONFIG   += console
+CONFIG   -= app_bundle
+
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
-#DEFINES += QT_DEPRECATED_WARNINGS
+DEFINES += QT_DEPRECATED_WARNINGS
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -24,17 +27,6 @@ TEMPLATE = app
 
 
 SOURCES += \
-        main.cpp \
-        mainwindow.cpp \
-    coordscalculator.cpp \
-    graphics/bubblegraphicsitem.cpp \
-    graphics/bubblescene.cpp
+        tst_bubblestesttest.cpp 
 
-HEADERS += \
-        mainwindow.h \
-    coordscalculator.h \
-    graphics/bubblegraphicsitem.h \
-    graphics/bubblescene.h \
-    locker.h \
-    tests/testcalculator.h
-
+DEFINES += SRCDIR=\\\"$$PWD/\\\"
