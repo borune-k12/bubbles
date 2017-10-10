@@ -1,1 +1,0 @@
-/usr/bin/c++   -std=c++11   CMakeFiles/bubbles-test.dir/coordscalculator_test.cpp.o  -o bubbles-test -rdynamic googletest/googlemock/gtest/libgtest.a googletest/googlemock/libgmock.a -pthread 

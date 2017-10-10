@@ -6,6 +6,10 @@ const int TEST_STEPS_COUNT = 1E5;   // количество итераций
 const double MAX_DELTA = 1E-10;     // погрешность
 const double DT = 0.00005;          // длительность такта
 
+/**
+ * @brief test функция тестирования
+ * @param bubbles вектор шариков
+ */
 void test(std::vector<Bubble> &bubbles) {
     for(auto iter=0; iter<TEST_STEPS_COUNT; ++iter)
     {
@@ -39,6 +43,9 @@ void test(std::vector<Bubble> &bubbles) {
     }
 }
 
+/**
+ * @brief TEST тестирование на треугольнике
+ */
 TEST(CalculatorTest,Triangle) {
 
     std::vector<Bubble> bubbles;
@@ -50,6 +57,9 @@ TEST(CalculatorTest,Triangle) {
     test(bubbles);
 }
 
+/**
+ * @brief TEST тестирование на квадрате
+ */
 TEST(CalculatorTest,Square) {
 
     std::vector<Bubble> bubbles;
@@ -61,6 +71,9 @@ TEST(CalculatorTest,Square) {
     test(bubbles);
 }
 
+/**
+ * @brief TEST тестирование на шестиугольнике
+ */
 TEST(CalculatorTest,Hexagon) {
 
     std::vector<Bubble> bubbles;
