@@ -5,7 +5,9 @@
 
 class QGraphicsSceneMouseEvent;
 
-/** класс сцены */
+/**
+ * @brief The BubbleScene class класс сцены
+ */
 class BubbleScene : public QGraphicsScene
 {
     Q_OBJECT

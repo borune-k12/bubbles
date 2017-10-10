@@ -6,9 +6,6 @@
 #include <thread>
 #include <memory>
 
-
-#include "locker.h"
-
 class QGraphicsScene;
 class QGraphicsView;
 class QVBoxLayout;
@@ -16,8 +13,9 @@ class QPushButton;
 class QMenu;
 class BubbleScene;
 class BubbleGraphicsItem;
+class Locker;
 
-#define DEFAULT_BUBBLES_COUNT 5
+const int DEFAULT_BUBBLES_COUNT = 5;
 
 class MainWindow : public QMainWindow
 {
@@ -38,6 +36,9 @@ private:
     int bubblesCount_;
     unsigned int clickedIndex_;
 
+    QPointF convertToScene(double x, double y);
+    std::pair<double,double> convertToLocal(const QPointF &point);
+
     std::shared_ptr<Locker> locker_;
 
 public:
@@ -56,8 +57,11 @@ private slots:
 
     void sltShowSettings();
 
-    void sltCreateBubbles();
+    void sltCreateBubblesRandom();
 
+    void sltCreateBubblesSquare();
+    void sltCreateBubblesTriangle();
+    void sltCreateBubblesHexagon();
 };
 
 #endif // MAINWINDOW_H

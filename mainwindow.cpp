@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include <QDebug>
 #include <thread>
 #include <QTimer>
 #include <QDateTime>
@@ -14,8 +13,11 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 
-#include "graphics/bubblegraphicsitem.h"
-#include "graphics/bubblescene.h"
+#include "bubblegraphicsitem.h"
+#include "bubblescene.h"
+
+#include "locker.h"
+#include "testshapes.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),thread_(nullptr),bubblesCount_(DEFAULT_BUBBLES_COUNT),clickedIndex_(-1)
@@ -26,10 +28,10 @@ MainWindow::MainWindow(QWidget *parent)
     graphicsScene_ = new BubbleScene;
 
     connect(graphicsScene_,&BubbleScene::addBubble,this,&MainWindow::sltAddBubble);
-    //graphicsScene_->setSceneRect(0,0,500,500);
+    graphicsScene_->setSceneRect(-400,-400,800,800);
     graphicsView_ = new QGraphicsView(graphicsScene_);
     graphicsView_->setRenderHints(QPainter::Antialiasing);
-    graphicsView_->adjustSize();
+
 
     btn_ = new QPushButton(tr("Начать"));
     connect(btn_,&QPushButton::clicked,this,&MainWindow::sltStartStop);
@@ -40,7 +42,15 @@ MainWindow::MainWindow(QWidget *parent)
     mainMenu_ = menuBar()->addMenu(QObject::tr("Меню"));
 
     mainMenu_->addAction(tr("Настройки"),this,SLOT(sltShowSettings()));
-    mainMenu_->addAction(tr("Перемешать"),this,SLOT(sltCreateBubbles()));
+
+    QMenu *shakeMenu = new QMenu(tr("Перемешать"));
+    mainMenu_->addMenu(shakeMenu);
+
+    shakeMenu->addAction(tr("Случайно"),this,SLOT(sltCreateBubblesRandom()));
+    shakeMenu->addAction(tr("Треугольник"),this,SLOT(sltCreateBubblesTriangle()));
+    shakeMenu->addAction(tr("Квадрат"),this,SLOT(sltCreateBubblesSquare()));
+    shakeMenu->addAction(tr("Шестиугольник"),this,SLOT(sltCreateBubblesHexagon()));
+
     mainMenu_->addAction(tr("Выход"), qApp, SLOT(quit()));
 
     mainWidget_->setLayout(layout_);
@@ -50,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent)
     locker_ = std::make_shared<Locker>(false);
 
     calculator_ = std::unique_ptr<CoordsCalculator>(new CoordsCalculator(locker_));
-    sltCreateBubbles();
+    sltCreateBubblesRandom();
 }
 
 MainWindow::~MainWindow()
@@ -64,8 +74,9 @@ MainWindow::~MainWindow()
     calculator_.reset(nullptr);
 }
 
-
-// начать/остановить симуляцию
+/**
+ * @brief MainWindow::sltStartStop начать/остановить симуляцию
+ */
 void MainWindow::sltStartStop()
 {
     // если симуляция запущена - останавливаем ее
@@ -84,10 +95,14 @@ void MainWindow::sltStartStop()
     }
 }
 
-// обновление положения шариков
+/**
+ * @brief MainWindow::sltReDraw обновление положения шариков
+ */
 void MainWindow::sltReDraw()
 {
+    // ждем освобождения семафора
     locker_->wait();
+
     // получаем рассчитанные координаты
     std::vector<Bubble> bubbles = calculator_->getBubbles();
     QList<QGraphicsItem *> items = graphicsScene_->items(Qt::AscendingOrder);
@@ -97,7 +112,7 @@ void MainWindow::sltReDraw()
     {
         // если элемент не выбран - перемещаем его в расчитанные координаты
         if(!items[iter]->isSelected())
-            items[iter]->setPos(bubbles.at(iter).x,bubbles.at(iter).y);
+            items[iter]->setPos(convertToScene(bubbles.at(iter).x,bubbles.at(iter).y));
     }
 
     // если симуляция запущена - запланируем перезапуск функции обновления
@@ -105,7 +120,9 @@ void MainWindow::sltReDraw()
         QTimer::singleShot(10,this,SLOT(sltReDraw()));
 }
 
-// слот для обработки перемещения шарика
+/**
+ * @brief MainWindow::sltBubbleMoved слот для обработки перемещения шарика
+ */
 void MainWindow::sltBubbleMoved()
 {
     // получаем указатель на элемент, который переместили
@@ -114,14 +131,13 @@ void MainWindow::sltBubbleMoved()
     // получаем координаты элемента
     QPointF center = sndr->getCenter();
 
-    qDebug() << sndr->getIndex() << "moved to"  << center;
-
     // добавляем новый шарик
-    //bubbles_->addElement(sndr->getIndex(),Bubble(center.x(),center.y()));
-    calculator_->deselectBubble(true,std::make_pair<double,double>(center.x(),center.y()));
+    calculator_->deselectBubble(true,convertToLocal(center));
 }
 
-// слот для обработки удаления шарика
+/**
+ * @brief MainWindow::sltDeleteBubble слот для обработки удаления шарика
+ */
 void MainWindow::sltDeleteBubble()
 {
     // получаем указатель на элемент, который надо удалить
@@ -132,13 +148,10 @@ void MainWindow::sltDeleteBubble()
 
     calculator_->deselectBubble(false);
 
-    qDebug() << sndr->getIndex() << "removed" ;
-
     // обновляем индексы у оставшихся элементов
     QList<QGraphicsItem *> items = graphicsScene_->items(Qt::AscendingOrder);
-    std::for_each(items.begin()+sndr->getIndex(),items.end(),[](QGraphicsItem*item){dynamic_cast<BubbleGraphicsItem*>(item)->updateIndex();});
+    std::for_each(items.begin()+sndr->getIndex(),items.end(),[](QGraphicsItem* item){dynamic_cast<BubbleGraphicsItem*>(item)->updateIndex();});
 
-    qDebug() << sndr->getIndex() << "removed" << items.size() << "left";
     // проверяем, остались ли еще шарики
     if(items.size() == 0) {
         // если шариков больше нет останавливаем симуляцию
@@ -154,22 +167,27 @@ void MainWindow::sltDeleteBubble()
     }
 }
 
-// слот для обработки клика по шарику
+/**
+ * @brief MainWindow::sltBubbleClicked слот для обработки клика по шарику
+ */
 void MainWindow::sltBubbleClicked()
 {
     // получаем указатель на элемент, на который кликнули
     BubbleGraphicsItem* sndr = dynamic_cast<BubbleGraphicsItem*>(sender());
 
-    qDebug() << sndr->getIndex() << "clicked";
-
     calculator_->selectBubble(sndr->getIndex());
 }
 
-// слот для добавления шарика
+/**
+ * @brief MainWindow::sltAddBubble слот для добавления шарика
+ * @param dst координаты точку, в которую надо добавить шарик
+ */
 void MainWindow::sltAddBubble(const QPointF &dst)
 {
     // добавляем шарик
-    calculator_->addBubble(Bubble(dst.x(),dst.y()));
+    std::pair<double,double> coords = convertToLocal(dst);
+
+    calculator_->addBubble(Bubble(coords.first,coords.second));
 
     // создаем элемент
     BubbleGraphicsItem *bubble = new BubbleGraphicsItem(calculator_->getBubblesCount()-1,BUBBLE_RADIUS,dst,Qt::blue);
@@ -185,25 +203,28 @@ void MainWindow::sltAddBubble(const QPointF &dst)
         btn_->setEnabled(true);
 }
 
-// слот для отображения диалога настроек количества шариков
+/**
+ * @brief MainWindow::sltShowSettings слот для отображения диалога настроек количества шариков
+ */
 void MainWindow::sltShowSettings()
 {
     bool ok;
     int cnt = QInputDialog::getInt(this, tr("Настройки"),tr("Начальное количество шариков"),DEFAULT_BUBBLES_COUNT,2,1000,1, &ok);
-    if (ok)
-    {
-
+    if (ok) {
         bubblesCount_ = cnt;
-        sltCreateBubbles();
+        sltCreateBubblesRandom();
     }
 }
 
-// слот для генерации шариков
-void MainWindow::sltCreateBubbles()
+/**
+ * @brief MainWindow::sltCreateBubbles слот для генерации шариков
+ */
+void MainWindow::sltCreateBubblesRandom()
 {
     if(calculator_->isStarted())
         sltStartStop();
-    // инициалируем ГПСЧ
+
+    // инициализируем ГПСЧ
     qsrand (QDateTime::currentMSecsSinceEpoch());
 
     // удаляем все имеющиеся шарики
@@ -212,46 +233,138 @@ void MainWindow::sltCreateBubbles()
     // очищаем сцену
     graphicsScene_->clear();
 
-    /*for(auto iter=0; iter<bubblesCount_; ++iter)
+    for(auto iter=0; iter<bubblesCount_; ++iter)
     {
         // добавляем шарик в контейнер
-        Bubble bubble(qrand()%graphicsView_->width(),qrand()%graphicsView_->height());
+        Bubble bubble((qrand()-RAND_MAX/2)/(RAND_MAX+0.),(qrand()-RAND_MAX/2)/(RAND_MAX+0.));
         calculator_->addBubble(bubble);
 
         // создаем элемент
-        BubbleGraphicsItem *bubbleItem = new BubbleGraphicsItem(iter,BUBBLE_RADIUS,QPointF(bubble.x,bubble.y),Qt::blue);
+        BubbleGraphicsItem *bubbleItem = new BubbleGraphicsItem(iter,BUBBLE_RADIUS,convertToScene(bubble.x,bubble.y),Qt::blue);
         connect(bubbleItem,&BubbleGraphicsItem::bubbleMoved,this,&MainWindow::sltBubbleMoved);
         connect(bubbleItem,&BubbleGraphicsItem::bubbleDeleted,this,&MainWindow::sltDeleteBubble);
         connect(bubbleItem,&BubbleGraphicsItem::bubbleClicked,this,&MainWindow::sltBubbleClicked);
 
         // добавляем элемент на сцену
         graphicsScene_->addItem(bubbleItem);
-    }*/
+    }
 
+    btn_->setEnabled(true);
+}
 
-    Bubble bubble(100+0.5*200,100);
-    calculator_->addBubble(bubble);
+/**
+ * @brief MainWindow::sltCreateBubblesHexagon сделать правильный шестиугольник из шариков
+ */
+void MainWindow::sltCreateBubblesHexagon() {
 
-    // создаем элемент
-    BubbleGraphicsItem *bubbleItem = new BubbleGraphicsItem(0,BUBBLE_RADIUS,QPointF(bubble.x,bubble.y),Qt::blue);
-    // добавляем элемент на сцену
-    graphicsScene_->addItem(bubbleItem);
+    // останавливаем симуляцию
+    if(calculator_->isStarted())
+        sltStartStop();
 
-    bubble = Bubble(100,100+200*sqrt(3)/2);
-    calculator_->addBubble(bubble);
+    // очищаем сцену
+    graphicsScene_->clear();
 
-    // создаем элемент
-    bubbleItem = new BubbleGraphicsItem(1,BUBBLE_RADIUS,QPointF(bubble.x,bubble.y),Qt::blue);
+    // удаляем шарики из калькулятора
+    calculator_->removeAllBubbles();
+
+    std::for_each(TestShapes::hexagon.begin(),TestShapes::hexagon.end(),[this](const std::pair<double,double> point){
+        // создаем шарик
+        Bubble bubble(point.first,point.second);
+
+        // добавляем шарик в калькулятор
+        calculator_->addBubble(bubble);
+
+        // создаем элемент
+        BubbleGraphicsItem *bubbleItem = new BubbleGraphicsItem(0,BUBBLE_RADIUS,convertToScene(bubble.x,bubble.y),Qt::blue);
+
         // добавляем элемент на сцену
-    graphicsScene_->addItem(bubbleItem);
+        graphicsScene_->addItem(bubbleItem);
+    });
 
-    bubble = Bubble(100+1*200,100+200*sqrt(3)/2);
-    calculator_->addBubble(bubble);
-    bubbleItem = new BubbleGraphicsItem(1,BUBBLE_RADIUS,QPointF(bubble.x,bubble.y),Qt::blue);
+    btn_->setEnabled(true);
+}
+/**
+ * @brief MainWindow::sltCreateBubblesSquare сделать квадрат из шариков
+ */
+void MainWindow::sltCreateBubblesSquare() {
+
+    // останавливаем симуляцию
+    if(calculator_->isStarted())
+        sltStartStop();
+
+    // очищаем сцену
+    graphicsScene_->clear();
+
+    // удаляем шарики из калькулятора
+    calculator_->removeAllBubbles();
+
+    std::for_each(TestShapes::square.begin(),TestShapes::square.end(),[this](const std::pair<double,double> point){
+        // создаем шарик
+        Bubble bubble(point.first,point.second);
+
+        // добавляем шарик в калькулятор
+        calculator_->addBubble(bubble);
+
+        // создаем элемент
+        BubbleGraphicsItem *bubbleItem = new BubbleGraphicsItem(0,BUBBLE_RADIUS,convertToScene(bubble.x,bubble.y),Qt::blue);
+
         // добавляем элемент на сцену
-    graphicsScene_->addItem(bubbleItem);
+        graphicsScene_->addItem(bubbleItem);
+    });
 
+    btn_->setEnabled(true);
+}
 
+/**
+ * @brief MainWindow::sltCreateBubblesTriangle сделать правильный треугольник из шариков
+ */
+void MainWindow::sltCreateBubblesTriangle() {
 
-     btn_->setEnabled(true);
+    // останавливаем симуляцию
+    if(calculator_->isStarted())
+        sltStartStop();
+
+    // очищаем сцену
+    graphicsScene_->clear();
+
+    // удаляем шарики из калькулятора
+    calculator_->removeAllBubbles();
+
+    std::for_each(TestShapes::triangle.begin(),TestShapes::triangle.end(),[this](const std::pair<double,double> point){
+        // создаем шарик
+        Bubble bubble(point.first,point.second);
+
+        // добавляем шарик в калькулятор
+        calculator_->addBubble(bubble);
+
+        // создаем элемент
+        BubbleGraphicsItem *bubbleItem = new BubbleGraphicsItem(0,BUBBLE_RADIUS,convertToScene(bubble.x,bubble.y),Qt::blue);
+
+        // добавляем элемент на сцену
+        graphicsScene_->addItem(bubbleItem);
+    });
+
+    btn_->setEnabled(true);
+}
+
+/**
+ * @brief MainWindow::convertToScene перевести из координат калькулятора в координаты сцены
+ * @param x x координата
+ * @param y y координата
+ * @return координата точки в системе координат сцены
+ */
+QPointF MainWindow::convertToScene(double x, double y) {
+    return QPointF(x*((graphicsScene_->sceneRect().right()-graphicsScene_->sceneRect().left())/2),
+                   -y*(graphicsScene_->sceneRect().bottom()-graphicsScene_->sceneRect().top())/2);
+}
+
+/**
+ * @brief MainWindow::convertToLocal перевести из координат сцены в координаты калькулятора
+ * @param point координаты на сцене
+ * @return координата точки в системе координат калькулятора
+ */
+std::pair<double,double> MainWindow::convertToLocal(const QPointF &point) {
+    return std::make_pair<double,double>(2*point.x()/(graphicsScene_->sceneRect().right()-graphicsScene_->sceneRect().left()),
+                                         -2*point.y()/(graphicsScene_->sceneRect().bottom()-graphicsScene_->sceneRect().top()));
+
 }

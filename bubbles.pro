@@ -26,15 +26,20 @@ TEMPLATE = app
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    coordscalculator.cpp \
+    calculator/coordscalculator.cpp \
     graphics/bubblegraphicsitem.cpp \
     graphics/bubblescene.cpp
 
 HEADERS += \
         mainwindow.h \
-    coordscalculator.h \
+    calculator/coordscalculator.h \
     graphics/bubblegraphicsitem.h \
     graphics/bubblescene.h \
     locker.h \
-    tests/testcalculator.h
+    calculator/movementcalculator.h \
+    bubble.h \
+    testshapes.h
+
+INCLUDEPATH += graphics \
+                calculator
 

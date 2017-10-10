@@ -4,7 +4,9 @@
 #include <mutex>
 #include <condition_variable>
 
-/** класс одноразрядного семафора */
+/**
+ * @brief The Locker class  одноразрядный семафор
+ */
 class Locker
 {
 private:

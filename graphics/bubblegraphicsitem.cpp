@@ -2,7 +2,15 @@
 #include <QPainter>
 #include <QGraphicsSceneDragDropEvent>
 
-BubbleGraphicsItem::BubbleGraphicsItem(size_t index, qreal radius, QPointF coords, Qt::GlobalColor color, QGraphicsItem *parent)
+/**
+ * @brief BubbleGraphicsItem::BubbleGraphicsItem
+ * @param index индекс шарика в векторе
+ * @param radius радиус шарика
+ * @param coords координаты шарика
+ * @param color цвет шарика
+ * @param parent указатель на родителя
+ */
+BubbleGraphicsItem::BubbleGraphicsItem(int index, qreal radius, QPointF coords, Qt::GlobalColor color, QGraphicsItem *parent)
     : QGraphicsObject(parent), index_(index), radius_(radius), color_(color)
 {
     setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
@@ -10,11 +18,21 @@ BubbleGraphicsItem::BubbleGraphicsItem(size_t index, qreal radius, QPointF coord
     setPos(coords);
 }
 
+/**
+ * @brief BubbleGraphicsItem::boundingRect вернуть boundingRect шарика
+ * @return
+ */
 QRectF BubbleGraphicsItem::boundingRect() const
 {
     return QRectF(-radius_,-radius_,2*radius_,2*radius_);
 }
 
+/**
+ * @brief BubbleGraphicsItem::paint отрисовка шарика
+ * @param painter
+ * @param option
+ * @param widget
+ */
 void BubbleGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     Q_UNUSED(option)
@@ -36,27 +54,45 @@ void BubbleGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem
     painter->drawEllipse(boundingRect());
 }
 
+/**
+ * @brief BubbleGraphicsItem::getCenter вернуть координаты центра шарика
+ * @return центр шарика
+ */
 QPointF BubbleGraphicsItem::getCenter() const
 {
     return pos();
 }
 
-size_t BubbleGraphicsItem::getIndex() const
+/**
+ * @brief BubbleGraphicsItem::getIndex вернуть индекс шарика
+ * @return индекс шарика
+ */
+int BubbleGraphicsItem::getIndex() const
 {
     return index_;
 }
 
+/**
+ * @brief BubbleGraphicsItem::updateIndex обновить индекс (после удаления шарика из вектора)
+ */
 void BubbleGraphicsItem::updateIndex()
 {
     index_--;
 }
 
+/**
+ * @brief BubbleGraphicsItem::mouseReleaseEvent событие отпускания кнопки мыши
+ * @param event
+ */
 void BubbleGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
+    // проверяем, какая кнопка была нажата
     if(event->button() == Qt::LeftButton)
     {
+        // если курсор был перемещен, значит двигаем шарик
         if(clickPoint_ != pos())
             emit bubbleMoved();
+        // иначе лопаем
         else emit bubbleDeleted();
     }
 
@@ -67,6 +103,10 @@ void BubbleGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsObject::mouseReleaseEvent(event);
 }
 
+/**
+ * @brief BubbleGraphicsItem::mousePressEvent событие клика на шарике
+ * @param event
+ */
 void BubbleGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if(event->button() == Qt::LeftButton)
