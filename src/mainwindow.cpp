@@ -19,6 +19,8 @@
 #include "locker.h"
 #include "testshapes.h"
 
+#include "coordscalculator.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),thread_(nullptr),bubblesCount_(DEFAULT_BUBBLES_COUNT),clickedIndex_(-1)
 {
@@ -185,7 +187,7 @@ void MainWindow::sltBubbleClicked()
 void MainWindow::sltAddBubble(const QPointF &dst)
 {
     // добавляем шарик
-    std::pair<double,double> coords = convertToLocal(dst);
+    Point coords = convertToLocal(dst);
 
     calculator_->addBubble(Bubble(coords.first,coords.second));
 
@@ -267,7 +269,7 @@ void MainWindow::sltCreateBubblesHexagon() {
     // удаляем шарики из калькулятора
     calculator_->removeAllBubbles();
 
-    std::for_each(TestShapes::hexagon.begin(),TestShapes::hexagon.end(),[this](const std::pair<double,double> point){
+    std::for_each(TestShapes::hexagon.begin(),TestShapes::hexagon.end(),[this](const Point point){
         // создаем шарик
         Bubble bubble(point.first,point.second);
 
@@ -298,7 +300,7 @@ void MainWindow::sltCreateBubblesSquare() {
     // удаляем шарики из калькулятора
     calculator_->removeAllBubbles();
 
-    std::for_each(TestShapes::square.begin(),TestShapes::square.end(),[this](const std::pair<double,double> point){
+    std::for_each(TestShapes::square.begin(),TestShapes::square.end(),[this](const Point point){
         // создаем шарик
         Bubble bubble(point.first,point.second);
 
@@ -330,7 +332,7 @@ void MainWindow::sltCreateBubblesTriangle() {
     // удаляем шарики из калькулятора
     calculator_->removeAllBubbles();
 
-    std::for_each(TestShapes::triangle.begin(),TestShapes::triangle.end(),[this](const std::pair<double,double> point){
+    std::for_each(TestShapes::triangle.begin(),TestShapes::triangle.end(),[this](const Point point){
         // создаем шарик
         Bubble bubble(point.first,point.second);
 
@@ -363,8 +365,8 @@ QPointF MainWindow::convertToScene(double x, double y) {
  * @param point координаты на сцене
  * @return координата точки в системе координат калькулятора
  */
-std::pair<double,double> MainWindow::convertToLocal(const QPointF &point) {
-    return std::make_pair<double,double>(2*point.x()/(graphicsScene_->sceneRect().right()-graphicsScene_->sceneRect().left()),
+Point MainWindow::convertToLocal(const QPointF &point) {
+    return Point(2*point.x()/(graphicsScene_->sceneRect().right()-graphicsScene_->sceneRect().left()),
                                          -2*point.y()/(graphicsScene_->sceneRect().bottom()-graphicsScene_->sceneRect().top()));
 
 }

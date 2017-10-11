@@ -2,9 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "coordscalculator.h"
 #include <thread>
 #include <memory>
+#include "testshapes.h"
 
 class QGraphicsScene;
 class QGraphicsView;
@@ -14,6 +14,7 @@ class QMenu;
 class BubbleScene;
 class BubbleGraphicsItem;
 class Locker;
+class CoordsCalculator;
 
 const int DEFAULT_BUBBLES_COUNT = 5;
 
@@ -37,7 +38,7 @@ private:
     unsigned int clickedIndex_;
 
     QPointF convertToScene(double x, double y);
-    std::pair<double,double> convertToLocal(const QPointF &point);
+    Point convertToLocal(const QPointF &point);
 
     std::shared_ptr<Locker> locker_;
 

@@ -51,7 +51,7 @@ void CoordsCalculator::selectBubble(int index)
  * @param moved флаг перемещения шарика. true - шарик перетащили, false - шарик лопнули
  * @param dst новые координаты шарика (если его перетащили)
  */
-void CoordsCalculator::deselectBubble(bool moved, std::pair<double, double> dst)
+void CoordsCalculator::deselectBubble(bool moved, Point dst)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if(moved)
@@ -69,6 +69,7 @@ void CoordsCalculator::deselectBubble(bool moved, std::pair<double, double> dst)
  */
 void CoordsCalculator::removeAllBubbles()
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     bubbles_.clear();
 }
 
@@ -97,6 +98,7 @@ int CoordsCalculator::getBubblesCount() const
  */
 const std::vector<Bubble> &CoordsCalculator::getBubbles() const
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     return bubbles_;
 }
 

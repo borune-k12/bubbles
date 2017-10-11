@@ -5,23 +5,25 @@
 #include <vector>
 #include <mutex>
 #include "bubble.h"
+#include "point.h"
 
 class Locker;
 
-const int DELAY = 5;                // задержка между тактами
-const double DT = 5E-5;             // длительность такта
+const int DELAY = 10;               // задержка между тактами
+const double DT = 2E-5;             // длительность такта. Для повышения точности расчетов необходимо уменьшать данный параметр
 
 /**
- * @brief The CoordsCalculator class Класс для расчета координат шариков
+ * @brief The CoordsCalculator class класс для расчета координат шариков
  */
 class CoordsCalculator
 {
 private:
-    std::vector<Bubble> bubbles_;
-    bool started_;
-    std::mutex mutex_;
-    int selectedIndex_;
-    std::shared_ptr<Locker> locker_;
+    std::vector<Bubble> bubbles_;       // вектор шариков
+    bool started_;                      // флаг запуска
+    mutable std::mutex mutex_;          // мьютекс для блокировки
+    int selectedIndex_;                 // индекс выбранного шарика
+    std::shared_ptr<Locker> locker_;    // семафор
+
     void _calculateCoords();
 
 public:
@@ -32,13 +34,13 @@ public:
     void stop();
 
     void selectBubble(int index);
-    void deselectBubble(bool moved, std::pair<double,double> dst = std::make_pair<double,double>(-1,-1));
-
-    void removeAllBubbles();
+    void deselectBubble(bool moved, Point dst = Point(-1,-1));
     void addBubble(const Bubble& bubble);
 
-    int getBubblesCount() const;
+    void removeAllBubbles();
+
     const std::vector<Bubble>& getBubbles() const;
+    int getBubblesCount() const;
 
     bool isStarted() const;
 };

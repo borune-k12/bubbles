@@ -3,23 +3,24 @@
 
 #include <vector>
 #include <bubble.h>
+#include "point.h"
 
 namespace MovementCalculator
 {
     /**
-     * @brief F: расчет модуля силы
-     * @param r: расстояние между двумя шариками
-     * @return величину модуля силы
+     * @brief F расчет модуля силы
+     * @param r расстояние между двумя шариками
+     * @return величина модуля силы
      */
     double F(double r) {return 1./r - 1./r/r;}
 
     /**
-     * @brief doStep: выполнение шага симуляции
-     * @param bubbles_: вектор шариков
-     * @param dt: временной интервал, в течение которого осуществлялось движение
-     * @param selectedIndex_: индекс элемента в массиве, который не участвует в расчетах (нужен, когда шарик перетаскивают)
+     * @brief doStep выполнение шага симуляции
+     * @param bubbles_ вектор шариков
+     * @param dt временной интервал, в течение которого осуществлялось движение
+     * @param selectedIndex индекс элемента в массиве, который не участвует в расчетах (нужен, когда шарик перетаскивают)
      */
-    static void doStep(std::vector<Bubble> &bubbles_, const double dt, const int selectedIndex_ = -1) {
+    static void doStep(std::vector<Bubble> &bubbles_, const double dt, const int selectedIndex = -1) {
         const int count = bubbles_.size();
 
         // создаем таблицу, в ячейках будем хранить значения dx,dy,r и f
@@ -36,7 +37,7 @@ namespace MovementCalculator
                 std::get<2>(matrix[column][row]) = sqrt(pow(std::get<0>(matrix[column][row]),2)+pow(std::get<1>(matrix[column][row]),2)); // r
 
                 // если шарик не выбран, он участвует в расчетах
-                if(column != selectedIndex_ && row != selectedIndex_)
+                if(column != selectedIndex && row != selectedIndex)
                     std::get<3>(matrix[column][row]) = F(std::get<2>(matrix[column][row])); // f
 
                 // если шарик выбран, он не взаимодействует с другими шариками, поэтому сила равна 0
@@ -51,7 +52,7 @@ namespace MovementCalculator
             }
 
         // расчитываем равнодействующие силы
-        std::vector<std::pair<double,double>> forces;
+        std::vector<Point> forces;
 
         for(int iter=0; iter<count; ++iter) // идем по списку точек
         {

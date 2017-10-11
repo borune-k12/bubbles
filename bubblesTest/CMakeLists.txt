@@ -9,7 +9,8 @@ add_executable(${PROJECT_NAME} coordscalculator_test.cpp)
 add_subdirectory (googletest)
 include_directories(${gtest_SOURCE_DIR}/include
                     ${gtest_SOURCE_DIR}
-                    ../calculator
+                    ../src/calculator
+                    ../src
                     ..)
 target_link_libraries (${PROJECT_NAME} gtest gmock)
 

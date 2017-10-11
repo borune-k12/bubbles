@@ -20,7 +20,6 @@ protected:
 
 signals:
     void addBubble(const QPointF& dst);
-
 };
 
 #endif // BUUBLESCENE_H
